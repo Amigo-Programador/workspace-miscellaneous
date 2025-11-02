@@ -1,1 +1,0 @@
-Ejercicos practicos para mejorar la logica de programación.
