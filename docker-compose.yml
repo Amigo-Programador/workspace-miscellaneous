@@ -1,0 +1,12 @@
+services:  
+  technic-challenge:
+    build: .\technic.challenge
+    image: idm/challenge:latest
+    container_name: "idm-technic-challenge"
+    ports:
+      - 8080:8080
+    networks:
+      - idm-challenge
+  
+networks:
+  idm-challenge:

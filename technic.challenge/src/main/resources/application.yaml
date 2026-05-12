@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: technic-challenge
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DATABASE_TO_UPPER=FALSE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+    init:
+      mode: always
+  h2:
+    console:
+      enabled: true
+  jackson:
+    default-property-inclusion: NON_NULL
