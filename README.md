@@ -1,1 +1,1 @@
-Ejercicos practicos para mejorar la logica de programación.
+Prueba tecnica - Michael Page

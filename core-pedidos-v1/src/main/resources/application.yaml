@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: core-pedidos-v1
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pedidos_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway maneja el esquema, no Hibernate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 500         # Tamaño de lote configurable (requisito del enunciado)
+        order_inserts: true       # Necesario para que el batch funcione real
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+pedidos:
+  batch:
+    size: 100
+
+logging:
+  level:
+    root: INFO
