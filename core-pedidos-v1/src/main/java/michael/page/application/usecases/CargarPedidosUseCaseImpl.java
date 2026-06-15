@@ -1,7 +1,7 @@
 package michael.page.application.usecases;
 
 import michael.page.application.ports.in.CargarPedidosUseCase;
-import michael.page.application.ports.out.ProcesarBashPort;
+import michael.page.application.ports.out.ProcesarBatchPort;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -17,20 +17,20 @@ import java.nio.file.Path;
 @Service
 public class CargarPedidosUseCaseImpl implements CargarPedidosUseCase {
 
-  private final ProcesarBashPort procesarBashPort;
+  private final ProcesarBatchPort procesarBatchPort;
 
-  public CargarPedidosUseCaseImpl(ProcesarBashPort procesarBashPort) {
-    this.procesarBashPort = procesarBashPort;
+  public CargarPedidosUseCaseImpl(ProcesarBatchPort procesarBatchPort) {
+    this.procesarBatchPort = procesarBatchPort;
   }
 
   @Override
-  public void procesarPedidos(byte[] fileBytes) {
+  public void procesarPedidos(byte[] fileBytes) { //tiene que retornar algo
     try {
       Path tempFile = Files.createTempFile("pedidos_upload_", ".csv");
       Files.write(tempFile, fileBytes);
 
       String pathFile = tempFile.toAbsolutePath().toString();
-      procesarBashPort.startJob(pathFile);
+      procesarBatchPort.startJob(pathFile);
     } catch (Exception ex) {
 
     }

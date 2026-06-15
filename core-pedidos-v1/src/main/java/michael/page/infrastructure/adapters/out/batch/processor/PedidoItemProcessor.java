@@ -14,19 +14,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PedidoItemProcessor implements ItemProcessor<PedidoCsv, Pedido> {
 
-  private final CargarPedidosUseCase cargarPedidosUseCase;
+//  private final CargarPedidos/**/UseCase cargarPedidosUseCase;
   private final PedidoBatchMapper pedidoBatchMapper;
 
-  public PedidoItemProcessor(CargarPedidosUseCase cargarPedidosUseCase,
-                             PedidoBatchMapper pedidoBatchMapper) {
-    this.cargarPedidosUseCase = cargarPedidosUseCase;
+  public PedidoItemProcessor(PedidoBatchMapper pedidoBatchMapper) {
     this.pedidoBatchMapper = pedidoBatchMapper;
   }
 
   @Override
   public Pedido process(PedidoCsv pedidoCsv) throws Exception {
 //    Pedido pedido = pedidoBatchMapper.toDomain
-    return null;
+    return pedidoBatchMapper.csvToDomain(pedidoCsv);
   }
 
 }

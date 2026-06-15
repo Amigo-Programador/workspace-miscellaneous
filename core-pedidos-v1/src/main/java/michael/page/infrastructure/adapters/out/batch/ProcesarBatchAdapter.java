@@ -1,13 +1,13 @@
 package michael.page.infrastructure.adapters.out.batch;
 
-import michael.page.application.ports.out.ProcesarBashPort;
+import michael.page.application.ports.out.ProcesarBatchPort;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProcesarBatchAdapter implements ProcesarBashPort {
+public class ProcesarBatchAdapter implements ProcesarBatchPort {
 
   private final JobLauncher jobLauncher;
   private final Job procesarPedidoJob;

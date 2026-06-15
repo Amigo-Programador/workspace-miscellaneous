@@ -17,7 +17,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "cargas_idempotencia,",
+@Table(name = "cargas_idempotencia",
   uniqueConstraints = {
     @UniqueConstraint(
       name = "UK_idempotency_hash",

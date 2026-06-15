@@ -3,12 +3,15 @@ package michael.page.infrastructure.adapters.out.batch.config;
 import michael.page.domain.model.Pedido;
 import michael.page.infrastructure.adapters.out.batch.dto.PedidoCsv;
 import michael.page.infrastructure.adapters.out.batch.processor.PedidoItemProcessor;
-import michael.page.infrastructure.adapters.out.batch.reader.PedidoCsvFlatItemReader;
+import michael.page.infrastructure.adapters.out.batch.reader.PedidoCsvItemReader;
+import michael.page.infrastructure.adapters.out.batch.writer.PedidoItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,6 +23,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class PedidoBatchConfig {
 
+  @Value("${pedidos.batch.size:100}")
+  private int batchSize;
+
+  @Value("${pedidos.batch.size:100}")
+  private String filePath;
+
   @Bean
   public Job procesarPedidosJob(JobRepository jobRepository, Step step) {
     return new JobBuilder("procesarPedidosJob", jobRepository)
@@ -30,13 +39,19 @@ public class PedidoBatchConfig {
   @Bean
   public Step step(JobRepository jobRepository,
                    PlatformTransactionManager transactionManager,
-                   PedidoItemProcessor pedidoItemProcessor) {
+                   PedidoItemProcessor pedidoItemProcessor,
+                   PedidoItemWriter pedidoItemWriter) {
     return new StepBuilder("csvStep", jobRepository)
-      .<PedidoCsv, Pedido>chunk(100, transactionManager)
-      .reader(new PedidoCsvFlatItemReader("ruta/a/tu/archivo.csv"))
+      .<PedidoCsv, Pedido>chunk(batchSize, transactionManager)
+      .reader(new PedidoCsvItemReader("resourses/pedidos.csv"))
       .processor(pedidoItemProcessor)
-      .writer(list -> {})
+      .writer(pedidoItemWriter) //falta registrar
       .build();
   }
 
+  @Bean
+  @StepScope
+  public PedidoCsvItemReader pedidoCsvReader(@Value("#{jobParameters['rutaArchivo']}") String rutaArchivo) {
+    return new PedidoCsvItemReader(rutaArchivo);
+  }
 }

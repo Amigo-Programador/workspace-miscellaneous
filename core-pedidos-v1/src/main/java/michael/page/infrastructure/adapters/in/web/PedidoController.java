@@ -41,7 +41,7 @@ public class PedidoController {
     validarIdempotenciaUseCase.registrarSiEsNuevo(idempotencyKey, fileBytes);
 
     // Cargar productos con el job batch
-
+    cargarPedidosUseCase.procesarPedidos(fileBytes);
 
 
     return ResponseEntity.ok("Archivo procesado correctamente");

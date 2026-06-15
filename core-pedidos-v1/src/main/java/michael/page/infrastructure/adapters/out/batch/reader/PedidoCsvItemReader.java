@@ -11,20 +11,20 @@ import org.springframework.core.io.FileSystemResource;
  * Encargado de abrir y procesar el archiv csv
  */
 
-public class PedidoCsvFlatItemReader extends FlatFileItemReader<PedidoCsv> {
+public class PedidoCsvItemReader extends FlatFileItemReader<PedidoCsv> {
 
-  public PedidoCsvFlatItemReader(String filePath) {
+  public PedidoCsvItemReader(String filePath) {
     setResource(new FileSystemResource(filePath));
-    setLineMapper(new DefaultLineMapper<>() {{
+    setLinesToSkip(1); // Saltamos la linea de los headers, se comenta si el csv viene con datos puros
 
+    setLineMapper(new DefaultLineMapper<>() {{
       setLineTokenizer(new DelimitedLineTokenizer(",") {{
         setNames("numeroPedido", "clienteId", "fechaEntrega", "estado", "zonaEntrega", "requiereRefrigeracion");
       }});
 
       setFieldSetMapper(new BeanWrapperFieldSetMapper<>() {{
-        setTargetType(PedidoCsv.class);
+        setTargetType(PedidoCsv.class); // Guarda lo leido en un objeto PedidoCsv
       }});
-
     }});
   }
 

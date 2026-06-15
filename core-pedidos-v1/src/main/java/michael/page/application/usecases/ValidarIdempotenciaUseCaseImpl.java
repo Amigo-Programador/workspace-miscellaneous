@@ -3,6 +3,8 @@ package michael.page.application.usecases;
 import michael.page.application.ports.in.ValidarIdempotenciaUseCase;
 import michael.page.application.ports.out.CargaIdempotenciaRepositoryPort;
 import michael.page.application.ports.out.GeneradorHashPort;
+import michael.page.domain.exception.LocalException;
+import org.springframework.stereotype.Service;
 
 /**
  * Tarea operativa del negocio que controlo los nuevos archivos CSV
@@ -11,11 +13,11 @@ import michael.page.application.ports.out.GeneradorHashPort;
  *  3. Si existe lanzar una excepcion, Si NO existe registrarlo en la base de datos.
  *  4. Solo permitir los archivos CSV que pasen la validacion.
  */
+@Service
 public class ValidarIdempotenciaUseCaseImpl implements ValidarIdempotenciaUseCase {
 
   private final GeneradorHashPort generadorHashPort;
   private final CargaIdempotenciaRepositoryPort cargaIdempotenciaRepositoryPort;
-
 
   public ValidarIdempotenciaUseCaseImpl(GeneradorHashPort generadorHashPort,
                                         CargaIdempotenciaRepositoryPort cargaIdempotenciaRepositoryPort) {
@@ -30,7 +32,7 @@ public class ValidarIdempotenciaUseCaseImpl implements ValidarIdempotenciaUseCas
     boolean exist = cargaIdempotenciaRepositoryPort.existFile(idempotencyKey, archivoHash);
 
     if (exist) {
-      throw new IllegalArgumentException("File already processed");
+      throw new LocalException();
     }
 
     cargaIdempotenciaRepositoryPort.registerFile(idempotencyKey, archivoHash);
