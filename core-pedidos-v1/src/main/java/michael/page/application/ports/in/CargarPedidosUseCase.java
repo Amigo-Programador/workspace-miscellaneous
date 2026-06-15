@@ -1,5 +1,6 @@
 package michael.page.application.ports.in;
 
+import michael.page.application.dto.ApiResponse;
 import michael.page.domain.model.Pedido;
 
 /**
@@ -7,6 +8,6 @@ import michael.page.domain.model.Pedido;
  */
 public interface CargarPedidosUseCase {
 
-  void procesarPedidos(byte[] fileBytes);
+  public ApiResponse procesarPedidos(byte[] fileBytes);
 
 }

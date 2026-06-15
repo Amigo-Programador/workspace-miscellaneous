@@ -1,5 +1,6 @@
 package michael.page.infrastructure.adapters.in.web;
 
+import michael.page.application.dto.ApiResponse;
 import michael.page.application.ports.in.CargarPedidosUseCase;
 import michael.page.application.ports.in.ValidarIdempotenciaUseCase;
 import org.springframework.http.MediaType;
@@ -18,7 +19,7 @@ import java.io.IOException;
  * Aqui exponemos los endpoints del API
  */
 @RestController
-@RequestMapping("/api/pedidos")
+@RequestMapping("/pedidos")
 public class PedidoController {
 
   private final ValidarIdempotenciaUseCase validarIdempotenciaUseCase;
@@ -31,7 +32,7 @@ public class PedidoController {
   }
 
   @PostMapping(value = "/cargar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<String> cargarPedidos(
+  public ResponseEntity<ApiResponse> cargarPedidos(
     @RequestHeader("Idempotency-Key") String idempotencyKey,
     @RequestParam("file") MultipartFile file) throws IOException {
 
@@ -41,10 +42,10 @@ public class PedidoController {
     validarIdempotenciaUseCase.registrarSiEsNuevo(idempotencyKey, fileBytes);
 
     // Cargar productos con el job batch
-    cargarPedidosUseCase.procesarPedidos(fileBytes);
+    ApiResponse response = cargarPedidosUseCase.procesarPedidos(fileBytes);
 
 
-    return ResponseEntity.ok("Archivo procesado correctamente");
+    return ResponseEntity.ok(response);
   }
 
 

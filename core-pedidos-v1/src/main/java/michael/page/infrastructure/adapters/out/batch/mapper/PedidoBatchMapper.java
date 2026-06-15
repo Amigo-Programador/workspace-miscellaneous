@@ -16,7 +16,7 @@ public class PedidoBatchMapper {
 
   public Pedido csvToDomain(PedidoCsv pedidoCsv) {
     return new Pedido(
-      UUID.randomUUID(),
+      UUID.randomUUID().toString(),
       pedidoCsv.getNumeroPedido(),
       pedidoCsv.getClienteId(),
       pedidoCsv.getZonaEntrega(),

@@ -32,7 +32,7 @@ public class ValidarIdempotenciaUseCaseImpl implements ValidarIdempotenciaUseCas
     boolean exist = cargaIdempotenciaRepositoryPort.existFile(idempotencyKey, archivoHash);
 
     if (exist) {
-      throw new LocalException();
+      throw new LocalException("");
     }
 
     cargaIdempotenciaRepositoryPort.registerFile(idempotencyKey, archivoHash);

@@ -1,31 +1,30 @@
 package michael.page.infrastructure.adapters.out.batch.writer;
 
+import michael.page.application.ports.out.PersistirPedidosPort;
 import michael.page.domain.model.Pedido;
-import michael.page.infrastructure.adapters.out.batch.dto.PedidoCsv;
 import michael.page.infrastructure.adapters.out.jpa.entity.PedidoEntity;
 import michael.page.infrastructure.adapters.out.jpa.mapper.PedidoEntityMapper;
 import michael.page.infrastructure.adapters.out.jpa.repository.PedidoJpaRepository;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class PedidoItemWriter implements ItemWriter<Pedido> {
 
-  private final PedidoJpaRepository pedidoJpaRepository;
-  private final PedidoEntityMapper pedidoEntityMapper;
+  private final PersistirPedidosPort persistirPedidosPort;
 
-  public PedidoItemWriter(PedidoJpaRepository pedidoJpaRepository, PedidoEntityMapper pedidoEntityMapper) {
-    this.pedidoJpaRepository = pedidoJpaRepository;
-    this.pedidoEntityMapper = pedidoEntityMapper;
+  public PedidoItemWriter(PersistirPedidosPort persistirPedidosPort) {
+    this.persistirPedidosPort = persistirPedidosPort;
   }
 
   @Override
   public void write(Chunk<? extends Pedido> chunk) throws Exception {
-    List<PedidoEntity> entities = chunk.getItems().stream()
-      .map(pedidoEntityMapper::domainToEntity)
-      .toList();
+    List<Pedido> pedidosValidos = (List<Pedido>) chunk.getItems();
 
-    pedidoJpaRepository.saveAll(entities);
+    persistirPedidosPort.guardarEnLote(pedidosValidos);
   }
+
 }

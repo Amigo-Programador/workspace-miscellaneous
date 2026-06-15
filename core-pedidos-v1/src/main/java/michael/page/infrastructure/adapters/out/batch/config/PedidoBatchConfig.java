@@ -23,11 +23,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class PedidoBatchConfig {
 
-  @Value("${pedidos.batch.size:100}")
+  @Value("${pedidos.batch.size:500}")
   private int batchSize;
-
-  @Value("${pedidos.batch.size:100}")
-  private String filePath;
 
   @Bean
   public Job procesarPedidosJob(JobRepository jobRepository, Step step) {
@@ -40,12 +37,14 @@ public class PedidoBatchConfig {
   public Step step(JobRepository jobRepository,
                    PlatformTransactionManager transactionManager,
                    PedidoItemProcessor pedidoItemProcessor,
-                   PedidoItemWriter pedidoItemWriter) {
+                   PedidoItemWriter pedidoItemWriter,
+                   PedidoCsvItemReader pedidoCsvReader) {
     return new StepBuilder("csvStep", jobRepository)
       .<PedidoCsv, Pedido>chunk(batchSize, transactionManager)
-      .reader(new PedidoCsvItemReader("resourses/pedidos.csv"))
+      .reader(pedidoCsvReader)
       .processor(pedidoItemProcessor)
-      .writer(pedidoItemWriter) //falta registrar
+      .writer(pedidoItemWriter)
+      .listener(pedidoItemProcessor)
       .build();
   }
 

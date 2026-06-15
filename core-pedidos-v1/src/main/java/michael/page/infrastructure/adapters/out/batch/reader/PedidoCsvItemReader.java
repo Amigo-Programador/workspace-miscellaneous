@@ -7,15 +7,14 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.core.io.FileSystemResource;
 
-/*
- * Encargado de abrir y procesar el archiv csv
+/**
+ * Encargado de abrir e iniciar el batch con los datos del archivo
  */
-
 public class PedidoCsvItemReader extends FlatFileItemReader<PedidoCsv> {
 
   public PedidoCsvItemReader(String filePath) {
     setResource(new FileSystemResource(filePath));
-    setLinesToSkip(1); // Saltamos la linea de los headers, se comenta si el csv viene con datos puros
+//    setLinesToSkip(1); // Saltamos la linea de los headers, se comenta si el csv viene con datos puros
 
     setLineMapper(new DefaultLineMapper<>() {{
       setLineTokenizer(new DelimitedLineTokenizer(",") {{

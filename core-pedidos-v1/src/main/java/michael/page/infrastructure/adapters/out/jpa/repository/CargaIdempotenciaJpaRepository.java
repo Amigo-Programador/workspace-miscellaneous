@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface CargaIdempotenciaJpaRepository extends JpaRepository<CargaIdempotenciaEntity, UUID> {
+public interface CargaIdempotenciaJpaRepository extends JpaRepository<CargaIdempotenciaEntity, String> {
 
   boolean existsByIdempotencyKeyAndArchivoHash(String idempotencyKey, String archivoHash);
 

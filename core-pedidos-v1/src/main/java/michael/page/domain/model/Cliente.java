@@ -1,17 +1,15 @@
 package michael.page.domain.model;
 
-import java.util.UUID;
-
 public class Cliente {
 
-  private UUID id;
+  private String id;
   private boolean activo;
 
-  public UUID getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(String id) {
     this.id = id;
   }
 }
