@@ -29,7 +29,7 @@ public class SecurityConfig {
         .anyRequest().authenticated()
       )
       .oauth2ResourceServer(oauth2 -> oauth2
-        .jwt(jwt -> {})  // ← sin .decoder(), Spring lee el jwk-set-uri del yaml automáticamente
+        .jwt(jwt -> {})
       );
 
     return http.build();

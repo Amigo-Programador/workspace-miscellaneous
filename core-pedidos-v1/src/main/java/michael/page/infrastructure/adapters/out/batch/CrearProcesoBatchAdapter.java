@@ -45,7 +45,7 @@ public class CrearProcesoBatchAdapter implements CrearProcesoBatchPort {
         .collect(Collectors.groupingBy(ApiResponse.FilaDescartada::getTipoError, Collectors.counting()));
 
       ApiResponse response = new ApiResponse();
-      response.setMensaje("Procesamiento por lotes finalizado.");
+      response.setMensaje("Procesamiento de pedidos en batch finalizado.");
       response.setTotalGuardados(totalExitosos);
       response.setPedidosConError(pedidosConError.size());
       response.setTotalProcesados(totalExitosos + pedidosConError.size());

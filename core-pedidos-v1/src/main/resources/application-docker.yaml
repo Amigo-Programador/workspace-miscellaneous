@@ -20,7 +20,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
-          batch_size: 500
+          batch_size: 100
         order_inserts: true
     show-sql: false
 
@@ -45,7 +45,7 @@ springdoc:
 
 pedidos:
   batch:
-    size: 500
+    size: 100
 
 logging:
   level:

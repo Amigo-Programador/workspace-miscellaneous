@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-/*
+/**
  * Adaptador de peticiones HTTP
  * Aqui exponemos los endpoints del API
  */

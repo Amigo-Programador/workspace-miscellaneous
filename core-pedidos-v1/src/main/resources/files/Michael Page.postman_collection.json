@@ -1,0 +1,135 @@
+{
+  "info": {
+    "_postman_id": "1aaec5bd-d282-4dda-a3cf-c42c974efe70",
+    "name": "Michael Page",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24401939",
+    "_collection_link": "https://go.postman.co/collection/24401939-1aaec5bd-d282-4dda-a3cf-c42c974efe70?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "generador-toke-jwt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "pm.environment.set(\"jwt-local\", response.access_token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "password",
+              "type": "text",
+              "uuid": "dd3747e7-b947-4b8a-81ad-a6e5508a1c9e"
+            },
+            {
+              "key": "client_id",
+              "value": "pedidos-client",
+              "type": "text",
+              "uuid": "8768ff76-1ea8-4e41-a59f-58b0ccbb6c14"
+            },
+            {
+              "key": "client_secret",
+              "value": "pedidos-secret",
+              "type": "text",
+              "uuid": "6cc907d7-ec78-427f-9824-6d3381593f00"
+            },
+            {
+              "key": "username",
+              "value": "evaluador",
+              "type": "text",
+              "uuid": "ddba78d5-9ac7-433c-847f-5f463f656edb"
+            },
+            {
+              "key": "password",
+              "value": "evaluador123",
+              "type": "text",
+              "uuid": "0b6395c7-7b69-43f1-abd6-cba473b9575f"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:9090/realms/pedidos/protocol/openid-connect/token",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "realms",
+            "pedidos",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "cargar-pedidos",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt-local}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "pedido-001",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "uuid": "ba8766f3-8034-442f-b4a9-0b9c944447be",
+              "src": "/C:/Users/RENZO/Documents/AmigoProgramador/workspace-miscellaneous/core-pedidos-v1/src/main/resources/files/pedidos.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "localhost:8080/pedidos/cargar",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "pedidos",
+            "cargar"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

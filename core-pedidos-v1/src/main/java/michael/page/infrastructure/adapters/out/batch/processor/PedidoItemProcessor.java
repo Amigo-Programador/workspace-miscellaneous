@@ -2,10 +2,8 @@ package michael.page.infrastructure.adapters.out.batch.processor;
 
 import lombok.extern.slf4j.Slf4j;
 import michael.page.application.dto.ApiResponse;
-import michael.page.application.ports.in.CargarPedidosUseCase;
 import michael.page.domain.exception.LocalException;
 import michael.page.domain.model.Pedido;
-import michael.page.domain.model.TipoError;
 import michael.page.domain.service.PedidoValidatorService;
 import michael.page.infrastructure.adapters.out.batch.dto.PedidoCsv;
 import michael.page.infrastructure.adapters.out.batch.mapper.PedidoBatchMapper;
@@ -49,7 +47,7 @@ public class PedidoItemProcessor implements ItemProcessor<PedidoCsv, Pedido>, St
         .add(new ApiResponse.FilaDescartada(id, le.getTipoError(), le.getMessage()));
       return null;
     } catch (Exception ex) {
-      log.error("Pedidos que no tienen formato valido");
+      log.error("Pedido rechazado por informacion invalida");
       String id = (pedidoCsv.getNumeroPedido() != null) ? pedidoCsv.getNumeroPedido() : "Fila sin ID";
       registrosDescartados
         .add(new ApiResponse.FilaDescartada(id, "ERROR_FORMATO", ex.getMessage()));
