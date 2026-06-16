@@ -17,17 +17,17 @@ import java.util.stream.Collectors;
 public class CrearProcesoBatchAdapter implements CrearProcesoBatchPort {
 
   private final JobLauncher jobLauncher;
-  private final Job procesarPedidoJob;
+  private final Job procesarPedidosJob;
 
   public CrearProcesoBatchAdapter(JobLauncher jobLauncher, Job procesarPedidoJob) {
     this.jobLauncher = jobLauncher;
-    this.procesarPedidoJob = procesarPedidoJob;
+    this.procesarPedidosJob = procesarPedidoJob;
   }
 
   @Override
   public ApiResponse startJob(String filePath) {
     try {
-      JobExecution execution = jobLauncher.run(procesarPedidoJob, new JobParametersBuilder()
+      JobExecution execution = jobLauncher.run(procesarPedidosJob, new JobParametersBuilder()
         .addString("rutaArchivo", filePath)
         .addLong("timestamp", System.currentTimeMillis()) // Asegura que el Job sea único por ejecución
         .toJobParameters());
@@ -37,13 +37,12 @@ public class CrearProcesoBatchAdapter implements CrearProcesoBatchPort {
       List<ApiResponse.FilaDescartada> pedidosConError =
         (List<ApiResponse.FilaDescartada>) execution.getExecutionContext().get("listaErrores");
 
-      Map<String, Long> erroresPorTipo = pedidosConError.stream()
-        .collect(Collectors.groupingBy(ApiResponse.FilaDescartada::getTipoError, Collectors.counting()));
-
-
       if (pedidosConError == null) {
         pedidosConError = new ArrayList<>();
       }
+
+      Map<String, Long> erroresPorTipo = pedidosConError.stream()
+        .collect(Collectors.groupingBy(ApiResponse.FilaDescartada::getTipoError, Collectors.counting()));
 
       ApiResponse response = new ApiResponse();
       response.setMensaje("Procesamiento por lotes finalizado.");

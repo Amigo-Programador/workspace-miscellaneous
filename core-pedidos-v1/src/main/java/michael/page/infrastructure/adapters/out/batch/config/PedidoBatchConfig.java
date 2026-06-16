@@ -23,7 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class PedidoBatchConfig {
 
-  @Value("${pedidos.batch.size:500}")
+  @Value("${pedidos.batch.size:10}")
   private int batchSize;
 
   @Bean
@@ -51,6 +51,11 @@ public class PedidoBatchConfig {
   @Bean
   @StepScope
   public PedidoCsvItemReader pedidoCsvReader(@Value("#{jobParameters['rutaArchivo']}") String rutaArchivo) {
+
+    if (rutaArchivo == null || rutaArchivo.isEmpty()) {
+      throw new IllegalStateException("La ruta del archivo no puede ser nula. ¡Verifica el JobParameters!");
+    }
+
     return new PedidoCsvItemReader(rutaArchivo);
   }
 }

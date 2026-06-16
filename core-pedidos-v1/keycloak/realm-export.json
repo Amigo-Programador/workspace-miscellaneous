@@ -1,0 +1,34 @@
+{
+  "realm": "pedidos",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "clients": [
+    {
+      "clientId": "pedidos-client",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "pedidos-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "bearerOnly": false
+    }
+  ],
+  "users": [
+    {
+      "username": "evaluador",
+      "enabled": true,
+      "email": "evaluador@pedidos.com",
+      "firstName": "Evaluador",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "evaluador123",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

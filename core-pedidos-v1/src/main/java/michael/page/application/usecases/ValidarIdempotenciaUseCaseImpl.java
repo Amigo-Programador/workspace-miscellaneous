@@ -32,7 +32,7 @@ public class ValidarIdempotenciaUseCaseImpl implements ValidarIdempotenciaUseCas
     boolean exist = cargaIdempotenciaRepositoryPort.existFile(idempotencyKey, archivoHash);
 
     if (exist) {
-      throw new LocalException("");
+      throw new LocalException("DUPLICADO", "El archivo ya fue procesado anteriormente");
     }
 
     cargaIdempotenciaRepositoryPort.registerFile(idempotencyKey, archivoHash);

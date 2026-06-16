@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface PedidoJpaRepository extends JpaRepository<PedidoEntity, String> {
+public interface PedidoJpaRepository extends JpaRepository<PedidoEntity, UUID> {
 
   public boolean existsByNumeroPedido(String numeroPedido);
 }

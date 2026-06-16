@@ -1,6 +1,7 @@
 package michael.page.infrastructure.adapters.out.jpa;
 
 import michael.page.application.ports.out.ValidarDatosPort;
+import michael.page.domain.exception.LocalException;
 import michael.page.domain.model.Zona;
 import michael.page.infrastructure.adapters.out.jpa.mapper.ZonaEntityMapper;
 import michael.page.infrastructure.adapters.out.jpa.repository.ClienteJpaRepository;
@@ -42,6 +43,7 @@ public class ValidarDatosAdapter implements ValidarDatosPort {
   public Zona findZonaById(String zonaId) {
     return zonaRepository.findById(zonaId)
       .map(zonaEntityMapper::toZonaDomain)
-      .get();
+      .orElseThrow(() -> new LocalException("ZONA_INVALIDA",
+        "Zona no encontrada: " + zonaId));
   }
 }

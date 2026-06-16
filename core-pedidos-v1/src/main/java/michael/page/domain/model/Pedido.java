@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Pedido {
 
-  private String id;
+  private UUID id;
   private String numeroPedido;
   private String clienteId;
   private String zonaId;
@@ -16,7 +16,7 @@ public class Pedido {
   public Pedido() {
   }
 
-  public Pedido(String id, String numeroPedido, String clienteId, String zonaId, LocalDate fechaEntrega, EstadoPedido estado, boolean requiereRefrigeracion) {
+  public Pedido(UUID id, String numeroPedido, String clienteId, String zonaId, LocalDate fechaEntrega, EstadoPedido estado, boolean requiereRefrigeracion) {
     this.id = id;
     this.numeroPedido = numeroPedido;
     this.clienteId = clienteId;
@@ -26,11 +26,11 @@ public class Pedido {
     this.requiereRefrigeracion = requiereRefrigeracion;
   }
 
-  public String getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 

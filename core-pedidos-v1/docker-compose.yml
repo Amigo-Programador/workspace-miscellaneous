@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: pedidos_postgres
+    environment:
+      POSTGRES_DB: pedidos_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d pedidos_db -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pedidos_network
+
+  # ── Keycloak ───────────────────────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: pedidos_keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_URL: http://localhost:9090
+      KC_HOSTNAME_ADMIN_URL: http://localhost:9090
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    #healthcheck:
+    #  test: [ "CMD-SHELL", "wget -q --spider http://localhost:8080/realms/pedidos || exit 1" ]
+#
+    #  interval: 15s
+    #  timeout: 10s
+    #  retries: 10
+    #  start_period: 120s   # Keycloak tarda en arrancar
+    networks:
+      - pedidos_network
+
+  # ── Tu aplicación Spring Boot ──────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pedidos_app
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      # Base de datos — apunta al servicio postgres por nombre de contenedor
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pedidos_postgres:5432/pedidos_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+         
+      # Keycloak — apunta al servicio keycloak por nombre de contenedor
+      # IMPORTANTE: dentro de Docker la app habla con keycloak por red interna (puerto 8080)
+      # El evaluador desde fuera usa localhost:9090, pero entre contenedores es keycloak:8080
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://pedidos_keycloak:8080/realms/pedidos
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://pedidos_keycloak:8080/realms/pedidos/protocol/openid-connect/certs
+
+      # Batch
+      SPRING_BATCH_JOB_ENABLED: "false"
+
+      # Flyway
+      SPRING_FLYWAY_ENABLED: "true"
+
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+
+    depends_on:
+      postgres:
+        condition: service_healthy    # espera a que postgres esté listo
+      keycloak:
+        condition: service_started    # espera a que keycloak esté listo
+    networks:
+      - pedidos_network
+
+networks:
+  pedidos_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

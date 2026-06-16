@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: core-pedidos-v1
+
+  batch:
+    job:
+      enabled: false
+
+  datasource:
+    # Si existe la variable de entorno, la usa; si no, cae al valor local
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pedidos_db}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 500
+        order_inserts: true
+    show-sql: false
+
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/pedidos
+          jwk-set-uri: http://pedidos_keycloak:8080/realms/pedidos/protocol/openid-connect/certs
+
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+
+pedidos:
+  batch:
+    size: 500
+
+logging:
+  level:
+    root: INFO

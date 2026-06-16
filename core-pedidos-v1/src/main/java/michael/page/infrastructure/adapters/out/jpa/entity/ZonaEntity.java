@@ -14,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "zona")
+@Table(name = "zonas")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ZonaEntity {

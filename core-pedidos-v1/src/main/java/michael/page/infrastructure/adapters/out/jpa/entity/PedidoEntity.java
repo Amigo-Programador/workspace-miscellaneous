@@ -31,7 +31,7 @@ public class PedidoEntity {
 
   @Id
   @Column(name = "id", updatable = false, nullable = false)
-  private String id;
+  private UUID id;
 
   @Column(name = "numero_pedido", nullable = false, length = 20)
   private String numeroPedido;
@@ -70,7 +70,7 @@ public class PedidoEntity {
   public PedidoEntity() {
   }
 
-  public PedidoEntity(String id, String numeroPedido, String clienteId, String zonaId,
+  public PedidoEntity(UUID id, String numeroPedido, String clienteId, String zonaId,
                       LocalDate fechaEntrega, String estado, boolean requiereRefrigeracion) {
     this.id = id;
     this.numeroPedido = numeroPedido;

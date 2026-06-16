@@ -3,10 +3,13 @@ spring:
     name: core-pedidos-v1
   datasource:
     url: jdbc:postgresql://localhost:5432/pedidos_db
-    username: postgres
-    password: postgres
+    username: admin
+    password: admin
     driver-class-name: org.postgresql.Driver
 
+  batch:
+    job:
+      enabled: false
 
   jpa:
     hibernate:
@@ -15,24 +18,28 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
-          batch_size: 500         # Tamaño de lote configurable (requisito del enunciado)
+          batch_size: 10         # Tamaño de lote configurable (requisito del enunciado)
         order_inserts: true       # Necesario para que el batch funcione real
     show-sql: false
 
   flyway:
-    enabled: true
+    enabled: true     # Habilitar Flyway
     locations: classpath:db/migration
     baseline-on-migrate: true
+
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ant_path_matcher
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui
+    path: /swagger-ui/index.html
 
 pedidos:
   batch:
-    size: 100
+    size: 10
 
 logging:
   level:
