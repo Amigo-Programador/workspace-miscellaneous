@@ -16,7 +16,7 @@
 7. Entrar a la pestaña Body y cargar el archivo de pedidos que elija, por defecto he dejado uno en la ruta → resources\files\pedidos.csv
 8. Obtendra un Json de respuesta con el resumen de los pedidos procesados
 
-![Arquitectura](src/main/resources/files/Screenshot%202026-06-16%20113459.png)
+![Arquitectura](src/main/resources/files/captura-respuesta-ok.png)
 
 {
     "mensaje": "Procesamiento por lotes finalizado.",
