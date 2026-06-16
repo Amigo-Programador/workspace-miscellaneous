@@ -23,8 +23,7 @@ public class PedidoValidatorService {
 
   public void validar(Pedido pedido) {
 
-    if (Objects.isNull(pedido.getNumeroPedido()) ||
-      !StringUtils.isAlphanumeric(pedido.getNumeroPedido())) {
+    if (!validarFormatoNumeroPedido(pedido.getNumeroPedido())) {
       throw new LocalException("NUMERO_PEDIDO_INVALIDO",
         "El numero de pedido solo debe contener letras o numeros");
     }
@@ -51,5 +50,11 @@ public class PedidoValidatorService {
       }
     }
 
-  }
+   }
+
+   public static boolean validarFormatoNumeroPedido(String numeroPedido) {
+     String regex = "^[A-Za-z0-9]{3}-[A-Za-z0-9]{4}$";
+     if (numeroPedido == null) return false;
+     return numeroPedido.matches(regex);
+   }
 }
