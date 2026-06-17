@@ -1,5 +1,7 @@
 package michael.page.infrastructure.adapters.in.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import michael.page.application.dto.ApiResponse;
 import michael.page.application.ports.in.CargarPedidosUseCase;
 import michael.page.application.ports.in.ValidarIdempotenciaUseCase;
@@ -20,6 +22,7 @@ import java.io.IOException;
  */
 @RestController
 @RequestMapping("/pedidos")
+@Tag(name = "Pedidos", description = "Endpoints para la gestión de pedidos")
 public class PedidoController {
 
   private final ValidarIdempotenciaUseCase validarIdempotenciaUseCase;
@@ -32,6 +35,8 @@ public class PedidoController {
   }
 
   @PostMapping(value = "/cargar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "Cargar pedidos desde CSV",
+    description = "Procesa un archivo CSV de forma masiva.")
   public ResponseEntity<ApiResponse> cargarPedidos(
     @RequestHeader("Idempotency-Key") String idempotencyKey,
     @RequestParam("file") MultipartFile file) throws IOException {

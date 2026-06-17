@@ -28,6 +28,7 @@ CREATE TABLE pedidos (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
 
+    -- la llave foránea apunta a la columna UNIQUE (codigo_cliente), no al UUID interno.
     CONSTRAINT fk_pedidos_clientes FOREIGN KEY (cliente_id) REFERENCES clientes(id),
     CONSTRAINT fk_pedidos_zonas FOREIGN KEY (zona_id) REFERENCES zonas(id),
     CONSTRAINT UK_pedido_numero UNIQUE (numero_pedido)
