@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="dbcecf6a-87f0-47e0-a503-eaa62e143305" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/hexagonal/ApiResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/hexagonal/BusinessRuleException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/hexagonal/ValidateUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/in/CreateDepositUseCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/in/CreateTransferenceUseCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/in/DeleteTransactionUseCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/in/FindAllTransactionsUseCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/in/ProcessTransactionUseCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/out/DebitCardPort.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/out/KafkaProducerPort.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/port/out/TransactionRepositoryPort.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/application/service/TransactionService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/domain/model/Client.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/domain/model/DebitCard.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/domain/model/Transaction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/domain/model/TransactionType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/common/TransactionTypeInfrastructure.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/in/dto/ClientResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/in/dto/DebitCardResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/in/dto/TransactionRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/in/dto/TransactionResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/in/web/TransactionController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/dto/ClientDocument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/dto/DebitCardDocument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/dto/TransactionDocument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/external/DebitCardAdapter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/mapper/TransactionDocumentMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/messaging/KafkaProducerAdapter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/persistence/TransactionMongoAdapter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/adapter/out/persistence/TransactionMongoRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/java/amigo/programador/hexagonal/infrastructure/config/BeanInitializerConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ms-transaction/src/main/resources/application-local.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="30ugkrbVvWlJ0yRUGcbXEHgN3Pp" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.library [clean,install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.library [clean].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-WindowsDefender&quot;: &quot;Microsoft Defender may affect IDE&quot;,
+    &quot;Notification.DoNotAsk-WindowsDefender&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/RENZO/Documents/AmigoProgramador/workspace-miscellaneous/library&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+  }
+}</component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="mvn clean" />
+      <command value="mvn clean install" />
+    </option>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dbcecf6a-87f0-47e0-a503-eaa62e143305" name="Changes" comment="" />
+      <created>1754483017517</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754483017517</updated>
+    </task>
+    <servers />
+  </component>
+</project>
