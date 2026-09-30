@@ -4,7 +4,7 @@ import amigo.programador.hexagonal.domain.model.Customer;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CustomerMapper {
+public class CustomerDocumentMapper {
 
   public Customer toDomain(CustomerDocument customerDocument) {
     return Customer.builder()

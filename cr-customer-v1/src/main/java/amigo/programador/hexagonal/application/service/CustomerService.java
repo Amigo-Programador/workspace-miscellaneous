@@ -1,6 +1,6 @@
 package amigo.programador.hexagonal.application.service;
 
-import amigo.programador.hexagonal.application.port.in.CustomerUserCase;
+import amigo.programador.hexagonal.application.port.in.CustomerUseCase;
 import amigo.programador.hexagonal.application.port.out.CustomerRepositoryPort;
 import amigo.programador.hexagonal.domain.model.Customer;
 import org.springframework.stereotype.Service;
@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-public class CustomerService implements CustomerUserCase {
+public class CustomerService implements CustomerUseCase {
 
   private final CustomerRepositoryPort customerRepositoryPort;
 
@@ -29,7 +29,8 @@ public class CustomerService implements CustomerUserCase {
 
   @Override
   public Mono<Customer> findCustomerById(String id) {
-    return customerRepositoryPort.findById(id);
+    return customerRepositoryPort.findById(id)
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Cliente no encontrado con id: " + id)));
   }
 
   @Override

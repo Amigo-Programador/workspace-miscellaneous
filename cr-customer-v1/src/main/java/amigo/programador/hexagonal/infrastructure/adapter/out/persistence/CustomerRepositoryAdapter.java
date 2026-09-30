@@ -10,31 +10,31 @@ import reactor.core.publisher.Mono;
 public class CustomerRepositoryAdapter implements CustomerRepositoryPort {
 
   private final CustomerMongoRepository customerMongoRepository;
-  private final CustomerMapper customerMapper;
+  private final CustomerDocumentMapper customerDocumentMapper;
 
   public CustomerRepositoryAdapter(CustomerMongoRepository customerMongoRepository,
-                                   CustomerMapper customerMapper) {
+                                   CustomerDocumentMapper customerDocumentMapper) {
     this.customerMongoRepository = customerMongoRepository;
-    this.customerMapper = customerMapper;
+    this.customerDocumentMapper = customerDocumentMapper;
   }
 
   @Override
   public Flux<Customer> findAll() {
     return customerMongoRepository.findAll()
-      .map(customerMapper::toDomain);
+      .map(customerDocumentMapper::toDomain);
   }
 
   @Override
   public Mono<Customer> findById(String id) {
     return customerMongoRepository.findById(id)
-      .map(customerMapper::toDomain);
+      .map(customerDocumentMapper::toDomain);
   }
 
   @Override
   public Mono<Customer> save(Customer customer) {
-    CustomerDocument c = customerMapper.fromDomain(customer);
+    CustomerDocument c = customerDocumentMapper.fromDomain(customer);
     return customerMongoRepository.save(c)
-      .map(customerMapper::toDomain);
+      .map(customerDocumentMapper::toDomain);
   }
 
   @Override
