@@ -1,0 +1,619 @@
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\.mvn\wrapper\maven-wrapper.properties ===
+
+wrapperVersion=3.3.4
+distributionType=only-script
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.zip
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\application\service\port\in\CustomerUserCase.java ===
+
+package amigo.programador.hexagonal.application.service.port.in;
+
+import amigo.programador.hexagonal.domain.model.Customer;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public interface CustomerUserCase {
+
+  public Mono<Customer> createCustomer(Customer customer);
+
+  public Mono<Customer> findCustomerById(String id);
+
+  public Flux<Customer> getAllCustomers();
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\application\service\port\out\CustomerRepositoryPort.java ===
+
+package amigo.programador.hexagonal.application.service.port.out;
+
+import amigo.programador.hexagonal.domain.model.Customer;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public interface CustomerRepositoryPort {
+
+  Flux<Customer> findAll();
+
+  Mono<Customer> findById(String id);
+
+  Mono<Customer> save(Customer customer);
+
+  Mono<Boolean> validateDuplicateDni(String dni);
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\application\service\CustomerService.java ===
+
+package amigo.programador.hexagonal.application.service;
+
+import in.port.amigo.programador.hexagonal.application.CustomerUserCase;
+import out.port.amigo.programador.hexagonal.application.CustomerRepositoryPort;
+import amigo.programador.hexagonal.domain.model.Customer;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@Service
+public class CustomerService implements CustomerUserCase {
+
+  private final CustomerRepositoryPort customerRepositoryPort;
+
+  public CustomerService(CustomerRepositoryPort customerRepositoryPort) {
+    this.customerRepositoryPort = customerRepositoryPort;
+  }
+
+  @Override
+  public Mono<Customer> createCustomer(Customer customer) {
+    return customerRepositoryPort.validateDuplicateDni(customer.getDni())
+        .flatMap(exists -> {
+          if (Boolean.TRUE.equals(exists)) {
+            return Mono.error(new IllegalArgumentException("El DNI " + customer.getDni() + " ya se encuentra registrado"));
+          }
+          return customerRepositoryPort.save(customer);
+        });
+  }
+
+  @Override
+  public Mono<Customer> findCustomerById(String id) {
+    return customerRepositoryPort.findById(id);
+  }
+
+  @Override
+  public Flux<Customer> getAllCustomers() {
+    return customerRepositoryPort.findAll();
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\domain\model\Customer.java ===
+
+package amigo.programador.hexagonal.domain.model;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
+@Builder
+public class Customer {
+  private String id;
+  private String name;
+  private String dni;
+  private Long age;
+  private LocalDate birthday;
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\dto\CustomerRequest.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.dto;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+
+import java.time.LocalDate;
+
+public record CustomerRequest (
+  @NotBlank
+  String name,
+
+  @NotNull
+  @Positive(message = "La edad debe ser mayor a 0")
+  Long age,
+
+  @NotBlank
+  @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe contener exactamente 8 dígitos numéricos")
+  String dni,
+
+  @NotNull
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  LocalDate birthday
+) {}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\dto\CustomerResponse.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.dto;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+public record CustomerResponse (
+  String id,
+  String name,
+  Long age,
+  String dni,
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  LocalDate birthday
+) {}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\exception\ErrorResponse.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.exception;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.time.LocalDateTime;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record ErrorResponse(
+  LocalDateTime dateTime,
+  Integer status,
+  String error,
+  String message
+) {}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\exception\InterceptorHandler.java ===
+
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.time.LocalDateTime;
+
+@RestControllerAdvice
+public class InterceptorHandler {
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(IllegalArgumentException ex) {
+    ErrorResponse response = new ErrorResponse(
+      LocalDateTime.now(),
+      HttpStatus.BAD_REQUEST.value(),
+      HttpStatus.BAD_REQUEST.getReasonPhrase(),
+      ex.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\mapper\CustomerWebMapper.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.mapper;
+
+import amigo.programador.hexagonal.domain.model.Customer;
+import amigo.programador.hexagonal.infrastructure.adapter.in.dto.CustomerRequest;
+import amigo.programador.hexagonal.infrastructure.adapter.in.dto.CustomerResponse;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CustomerWebMapper {
+
+  public CustomerResponse toResponse(Customer customer) {
+    return new CustomerResponse(
+      customer.getId(),
+      customer.getName(),
+      customer.getAge(),
+      customer.getDni(),
+      customer.getBirthday());
+  }
+
+  public Customer toDomain(CustomerResponse customerResponse) {
+    return Customer.builder()
+      .id(customerResponse.id())
+      .name(customerResponse.name())
+      .age(customerResponse.age())
+      .birthday(customerResponse.birthday())
+      .build();
+  }
+
+  public CustomerRequest toRequest(Customer customer) {
+    return new CustomerRequest(
+      customer.getName(),
+      customer.getAge(),
+      customer.getDni(),
+      customer.getBirthday());
+  }
+
+  public Customer fromRequest(CustomerRequest customerRequest) {
+    return Customer.builder()
+      .name(customerRequest.name())
+      .age(customerRequest.age())
+      .dni(customerRequest.dni())
+      .birthday(customerRequest.birthday())
+      .build();
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\web\CustomerController.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.web;
+
+import amigo.programador.hexagonal.application.service.CustomerService;
+import amigo.programador.hexagonal.domain.model.Customer;
+import amigo.programador.hexagonal.infrastructure.adapter.in.dto.CustomerRequest;
+import amigo.programador.hexagonal.infrastructure.adapter.in.dto.CustomerResponse;
+import amigo.programador.hexagonal.infrastructure.adapter.in.mapper.CustomerWebMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@Tag(name = "Customer API", description = "Endpoints para la gestión de clientes")
+@RestController
+@RequestMapping("/customer")
+public class CustomerController {
+
+  private final CustomerService customerService;
+  private final CustomerWebMapper customerWebMapper;
+
+  public CustomerController(CustomerService customerService,
+                            CustomerWebMapper customerWebMapper) {
+    this.customerService = customerService;
+    this.customerWebMapper = customerWebMapper;
+  }
+
+  @Operation(summary = "Obtener todos los clientes")
+  @GetMapping("/getAll")
+  public Flux<CustomerResponse> getAllCustomers() {
+    return customerService.getAllCustomers()
+      .map(customerWebMapper::toResponse);
+  }
+
+  @Operation(summary = "Buscar cliente por ID")
+  @GetMapping("/find/{id}")
+  public Mono<CustomerResponse> getCustomerById(@PathVariable String id) {
+    return customerService.findCustomerById(id)
+      .map(customerWebMapper::toResponse);
+  }
+
+  @Operation(summary = "Crear un nuevo cliente")
+  @PostMapping("/create")
+  public Mono<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
+    Customer customer = customerWebMapper.fromRequest(customerRequest);
+
+    return customerService.createCustomer(customer)
+      .map(customerWebMapper::toResponse);
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\CustomerDocument.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import java.time.LocalDate;
+
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+
+@Data
+@Builder
+public class CustomerDocument {
+  @Id
+  private String id;
+
+  @NotBlank
+  private String name;
+
+  @NotNull
+  @Positive(message = "La edad debe ser mayor a 0")
+  private Long age;
+
+  @NotNull
+  @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe contener exactamente 8 dígitos numéricos")
+  @Indexed(unique = true)
+  private String dni;
+
+  @NotNull
+  private LocalDate birthday;
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\CustomerMapper.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+import amigo.programador.hexagonal.domain.model.Customer;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CustomerMapper {
+
+  public Customer toDomain(CustomerDocument customerDocument) {
+    return Customer.builder()
+      .id(customerDocument.getId())
+      .name(customerDocument.getName())
+      .dni(customerDocument.getDni())
+      .age(customerDocument.getAge())
+      .birthday(customerDocument.getBirthday())
+      .build();
+  }
+
+  public CustomerDocument fromDomain(Customer customer) {
+    return CustomerDocument.builder()
+      .id(customer.getId())
+      .name(customer.getName())
+      .age(customer.getAge())
+      .dni(customer.getDni())
+      .birthday(customer.getBirthday())
+      .build();
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\CustomerMongoRepository.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import reactor.core.publisher.Mono;
+
+public interface CustomerMongoRepository extends ReactiveMongoRepository<CustomerDocument, String> {
+
+  Mono<Boolean> existsByDni(String dni);
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\CustomerRepositoryAdapter.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+import out.port.amigo.programador.hexagonal.application.CustomerRepositoryPort;
+import amigo.programador.hexagonal.domain.model.Customer;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@Component
+public class CustomerRepositoryAdapter implements CustomerRepositoryPort {
+
+  private final CustomerMongoRepository customerMongoRepository;
+  private final CustomerMapper customerMapper;
+
+  public CustomerRepositoryAdapter(CustomerMongoRepository customerMongoRepository,
+                                   CustomerMapper customerMapper) {
+    this.customerMongoRepository = customerMongoRepository;
+    this.customerMapper = customerMapper;
+  }
+
+  @Override
+  public Flux<Customer> findAll() {
+    return customerMongoRepository.findAll()
+      .map(customerMapper::toDomain);
+  }
+
+  @Override
+  public Mono<Customer> findById(String id) {
+    return customerMongoRepository.findById(id)
+      .map(customerMapper::toDomain);
+  }
+
+  @Override
+  public Mono<Customer> save(Customer customer) {
+    CustomerDocument c = customerMapper.fromDomain(customer);
+    return customerMongoRepository.save(c)
+      .map(customerMapper::toDomain);
+  }
+
+  @Override
+  public Mono<Boolean> validateDuplicateDni(String dni) {
+    return customerMongoRepository.existsByDni(dni);
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\java\amigo\programador\hexagonal\CrCustomerV1Application.java ===
+
+package amigo.programador.hexagonal;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CrCustomerV1Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CrCustomerV1Application.class, args);
+	}
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\main\resources\application.yaml ===
+
+spring:
+  application:
+    name: cr-customer-v1
+  data:
+    mongodb:
+      database: db-customer
+      host: localhost
+      port: 27017
+  jackson:
+    default-property-inclusion: NON_NULL
+server:
+  port: 8088
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\src\test\java\amigo\programador\hexagonal\CrCustomerV1ApplicationTests.java ===
+
+package amigo.programador.hexagonal;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class CrCustomerV1ApplicationTests {
+
+//	@Test
+//	void contextLoads() {
+//	}
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\cr-customer-v1\pom.xml ===
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>amigo.programador.hexagonal</groupId>
+	<artifactId>cr-customer-v1</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name/>
+	<description/>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+		<spring-cloud.version>2025.1.3</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb-reactive-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
