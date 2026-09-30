@@ -1,0 +1,701 @@
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\.mvn\wrapper\maven-wrapper.properties ===
+
+wrapperVersion=3.3.4
+distributionType=only-script
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.zip
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\application\port\in\FindAllTransactionsUseCase.java ===
+
+package amigo.programador.hexagonal.application.port.in;
+
+import amigo.programador.hexagonal.domain.model.Transaction;
+import reactor.core.publisher.Flux;
+
+public interface FindAllTransactionsUseCase {
+
+  public Flux<Transaction> findAll();
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\application\port\out\RepositoryPort.java ===
+
+package amigo.programador.hexagonal.application.port.out;
+
+import amigo.programador.hexagonal.domain.model.Transaction;
+import reactor.core.publisher.Flux;
+
+public interface RepositoryPort {
+
+  Flux<Transaction> findAll();
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\application\service\TransactionService.java ===
+
+package amigo.programador.hexagonal.application.service;
+
+import amigo.programador.hexagonal.application.port.in.FindAllTransactionsUseCase;
+import amigo.programador.hexagonal.application.port.out.RepositoryPort;
+import amigo.programador.hexagonal.domain.model.Transaction;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+
+@Service
+public class TransactionService implements FindAllTransactionsUseCase {
+
+  private final RepositoryPort repositoryPort;
+
+  public TransactionService(RepositoryPort repositoryPort) {
+    this.repositoryPort = repositoryPort;
+  }
+
+  public Flux<Transaction> findAll() {
+    return repositoryPort.findAll();
+  }
+
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\domain\exception\BusinessRuleException.java ===
+
+package amigo.programador.hexagonal.domain.exception;
+
+public class BusinessRuleException extends RuntimeException {
+
+  private final String errorCode;
+
+  public BusinessRuleException(String message) {
+    super(message);
+    this.errorCode = "BUSINESS_RULE_VIOLATION";
+  }
+
+  public String getErrorCode() {
+    return errorCode;
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\domain\model\Client.java ===
+
+package amigo.programador.hexagonal.domain.model;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Builder
+@Data
+public class Client {
+
+  private Long id;
+  private String name;
+  private Integer age;
+  private String dni;
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\domain\model\DebitCard.java ===
+
+package amigo.programador.hexagonal.domain.model;
+
+import amigo.programador.hexagonal.domain.exception.BusinessRuleException;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Builder
+@Data
+public class DebitCard {
+
+  private Long id;
+  private String cardNumber;
+  private Double balance;
+  private LocalDate expirationDate;
+  private Client client;
+
+  public void deposit(Double amount) {
+    if (amount <= 0) {
+      throw new BusinessRuleException("El monto a depositar debe ser mayor a cero");
+    }
+    this.balance += amount;
+  }
+
+  public void withdraw(Double amount) {
+    if (amount <= 0) {
+      throw new BusinessRuleException("El monto a retirar debe ser mayor a cero");
+    }
+    if (this.balance < amount) {
+      throw new BusinessRuleException("Saldo insuficiente");
+    }
+    this.balance -= amount;
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\domain\model\Transaction.java ===
+
+package amigo.programador.hexagonal.domain.model;
+
+import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class Transaction {
+
+  private Long id;
+  private String transactionCode;
+  private Double transactionAmount;
+  private DebitCard origin;
+  private DebitCard destination;
+  private LocalDateTime transactionDate;
+  private TransactionType transactionType;
+
+  public Transaction processTransaction(DebitCard originCard, DebitCard destinationCard) {
+
+    switch(transactionType) {
+      case DEPOSIT:
+        originCard.deposit(transactionAmount);
+        this.origin = originCard;
+        break;
+
+      case CASH_OUT:
+        originCard.withdraw(transactionAmount);
+        this.origin = originCard;
+        break;
+
+      case TRANSFER:
+        originCard.withdraw(transactionAmount);
+        destinationCard.deposit(transactionAmount);
+        this.origin = originCard;
+        this.destination = destinationCard;
+        break;
+
+    }
+
+    this.transactionDate = LocalDateTime.now();
+    return this;
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\domain\model\TransactionType.java ===
+
+package amigo.programador.hexagonal.domain.model;
+
+public enum TransactionType {
+  DEPOSIT, CASH_OUT, TRANSFER
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\dto\ApiResponse.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.dto;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class ApiResponse<T> {
+  private String message;
+  private T response;
+
+  public static <T> ApiResponse<T> success(String message, T response) {
+    return ApiResponse.<T>builder()
+      .message(message)
+      .response(response)
+      .build();
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\in\web\TransactionController.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.in.web;
+
+import amigo.programador.hexagonal.application.port.in.FindAllTransactionsUseCase;
+import amigo.programador.hexagonal.infrastructure.adapter.in.dto.ApiResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+@RestController
+@RequestMapping("/transaction")
+public class TransactionController {
+
+  private final FindAllTransactionsUseCase findAllTransactionsUseCase;
+
+  public TransactionController(FindAllTransactionsUseCase findAllTransactionsUseCase) {
+    this.findAllTransactionsUseCase = findAllTransactionsUseCase;
+  }
+
+  @GetMapping("/findall")
+  public Mono<ApiResponse> findAll() {
+    return findAllTransactionsUseCase.findAll()
+      .collectList()
+      .map(tr -> ApiResponse.success("All transactions", tr));
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\dto\ClientDocument.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.dto;
+
+import amigo.programador.hexagonal.domain.model.Client;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.Objects;
+
+@Builder
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClientDocument {
+  @Id
+  @Field("_id")
+  private Long id;
+  private String name;
+  private Integer age;
+  private String dni;
+
+  public static Client toDomain(ClientDocument clientDocument) {
+    if(Objects.isNull(clientDocument)) {
+      return null;
+    }
+
+    return Client.builder()
+      .id(clientDocument.id)
+      .name(clientDocument.name)
+      .age(clientDocument.age)
+      .dni(clientDocument.dni)
+      .build();
+  }
+
+  public static ClientDocument fromDomain(Client client) {
+    if(Objects.isNull(client)) {
+      return null;
+    }
+
+    return ClientDocument.builder()
+      .id(client.getId())
+      .name(client.getName())
+      .age(client.getAge())
+      .dni(client.getDni())
+      .build();
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\dto\DebitCardDocument.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.dto;
+
+import amigo.programador.hexagonal.domain.model.DebitCard;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.util.Objects;
+
+@Builder
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class DebitCardDocument {
+  @Id
+  @Field("_id")
+  private Long id;
+  private String cardNumber;
+  private Double balance;
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  private LocalDate expirationDate;
+  private ClientDocument client;
+
+  public static DebitCard toDomain(DebitCardDocument debitCardDocument) {
+    if(Objects.isNull(debitCardDocument)) {
+      return null;
+    }
+
+    return DebitCard.builder()
+      .id(debitCardDocument.getId())
+      .cardNumber(debitCardDocument.getCardNumber())
+      .balance(debitCardDocument.getBalance())
+      .expirationDate(debitCardDocument.getExpirationDate())
+      .client(ClientDocument.toDomain(debitCardDocument.getClient()))
+      .build();
+  }
+
+  public static DebitCardDocument fromDomain(DebitCard debitCard) {
+    if(Objects.isNull(debitCard)) {
+      return null;
+    }
+
+    return DebitCardDocument.builder()
+      .id(debitCard.getId())
+      .cardNumber(debitCard.getCardNumber())
+      .balance(debitCard.getBalance())
+      .expirationDate(debitCard.getExpirationDate())
+      .client(ClientDocument.fromDomain(debitCard.getClient()))
+      .build();
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\dto\TransactionDocument.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.dto;
+
+import amigo.programador.hexagonal.domain.model.Transaction;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+@Data
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Document(collection = "transaction")
+@NoArgsConstructor
+@AllArgsConstructor
+@TypeAlias("amigo.programador.mstransaction.entity.Transaction")
+public class TransactionDocument {
+  @NotNull
+  @Id
+  @Field("_id")
+  private Long id;
+
+  @NotNull
+  @Pattern(regexp = "^[0-9]{4}$", message = "Invalid transaction code, example: 4891")
+  private String transactionCode;
+
+  @NotNull
+  private Double transactionAmount;
+
+  @NotNull
+  private DebitCardDocument origin;
+
+  private DebitCardDocument destination;
+
+  private LocalDateTime transactionDate;
+
+  @NotNull
+  @Field("transactionType")
+  private TransactionType transactionType;
+
+  public static Transaction toDomain(TransactionDocument transactionDocument) {
+    if(Objects.isNull(transactionDocument)) {
+      return null;
+    }
+
+    return Transaction.builder()
+      .id(transactionDocument.getId())
+      .transactionAmount(transactionDocument.getTransactionAmount())
+      .transactionCode(transactionDocument.getTransactionCode())
+      .destination(DebitCardDocument.toDomain(transactionDocument.getDestination()))
+      .origin(DebitCardDocument.toDomain(transactionDocument.getOrigin()))
+      .transactionType(
+        amigo.programador.hexagonal.domain.model.TransactionType.valueOf(transactionDocument.getTransactionType().name()))
+      .transactionDate(transactionDocument.getTransactionDate())
+      .build();
+  }
+
+  public static TransactionDocument fromDomain(Transaction transaction) {
+    if(Objects.isNull(transaction)) {
+      return null;
+    }
+
+    return TransactionDocument.builder()
+      .id(transaction.getId())
+      .transactionAmount(transaction.getTransactionAmount())
+      .transactionCode(transaction.getTransactionCode())
+      .destination(DebitCardDocument.fromDomain(transaction.getDestination()))
+      .origin(DebitCardDocument.fromDomain(transaction.getOrigin()))
+      .transactionType(
+        TransactionType.valueOf(transaction.getTransactionType().name()))
+      .transactionDate(transaction.getTransactionDate())
+      .build();
+  }
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\dto\TransactionType.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.dto;
+
+public enum TransactionType {
+  DEPOSIT, CASH_OUT, TRANSFER;
+
+  public amigo.programador.hexagonal.domain.model.TransactionType toDomain() {
+    return amigo.programador.hexagonal.domain.model.TransactionType.valueOf(this.name());
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\MongoRepository.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+import amigo.programador.hexagonal.infrastructure.adapter.out.dto.TransactionDocument;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface MongoRepository extends ReactiveMongoRepository<TransactionDocument, Long> {
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\adapter\out\persistence\RepositoryAdapter.java ===
+
+package amigo.programador.hexagonal.infrastructure.adapter.out.persistence;
+
+import amigo.programador.hexagonal.application.port.out.RepositoryPort;
+import amigo.programador.hexagonal.domain.model.Transaction;
+import amigo.programador.hexagonal.infrastructure.adapter.out.dto.TransactionDocument;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+
+@Component
+public class RepositoryAdapter implements RepositoryPort {
+
+  private final MongoRepository mongoRepository;
+
+  public RepositoryAdapter(MongoRepository mongoRepository) {
+    this.mongoRepository = mongoRepository;
+  }
+
+  @Override
+  public Flux<Transaction> findAll() {
+    return mongoRepository.findAll()
+      .map(tr -> TransactionDocument.toDomain(tr));
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\infrastructure\config\BeanInitializerConfig.java ===
+
+package amigo.programador.hexagonal.infrastructure.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.stereotype.Component;
+
+@Configuration
+public class BeanInitializerConfig {
+
+  @Autowired
+  public void configureMongoConverter(MappingMongoConverter converter) {
+    converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+  }
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\java\amigo\programador\hexagonal\MsTransactionApplication.java ===
+
+package amigo.programador.hexagonal;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MsTransactionApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(MsTransactionApplication.class, args);
+	}
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\main\resources\application-local.yaml ===
+
+spring:
+  application:
+    name: ms-transaction
+  config:
+    import: optional:configserver:http://localhost:8888
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\src\test\java\amigo\programador\hexagonal\MsTransactionApplicationTests.java ===
+
+package amigo.programador.hexagonal;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class MsTransactionApplicationTests {
+
+//	@Test
+//	void contextLoads() {
+//	}
+
+}
+
+=== FILE: C:\Users\RENZO\Documents\AmigoProgramador\workspace-miscellaneous\ms-transaction\pom.xml ===
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>amigo.programador.hexagonal</groupId>
+	<artifactId>ms-transaction</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name/>
+	<description/>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+		<spring-cloud.version>2025.1.3</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb-reactive-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
